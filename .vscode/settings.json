@@ -1,0 +1,41 @@
+{
+    "json.schemaDownload.enable": true,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit"
+    },
+    "cSpell.words": [
+        "bindgen",
+        "clippy",
+        "dylib",
+        "rapidoc",
+        "redoc",
+        "reqwest",
+        "schemars",
+        "tauri",
+        "uniffi",
+        "unpositioned",
+        "unshift",
+        "utoipa"
+    ],
+    "search.exclude": {
+        "**/.git": true,
+        "**/.github": true,
+        "**/.nuxt": true,
+        "**/.output": true,
+        "**/.pnpm": true,
+        "**/.vscode": true,
+        "**/.yarn": true,
+        "**/Cargo.lock": true,
+        "**/bower_components": true,
+        "**/dist/**": true,
+        "**/logs": true,
+        "**/node_modules": true,
+        "**/out/**": true,
+        "**/package-lock.json": true,
+        "**/pnpm-lock.yaml": true,
+        "**/tmp": true,
+        "**/dist": true,
+        "**/yarn.lock": true
+    }
+}

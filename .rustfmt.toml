@@ -1,0 +1,13 @@
+max_width = 100
+
+tab_spaces = 4
+hard_tabs = false
+
+use_field_init_shorthand = true
+
+wrap_comments = true
+format_strings = true
+
+# Sort and group imports
+group_imports = "StdExternalCrate"
+imports_granularity = "Crate"

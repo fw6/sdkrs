@@ -1,0 +1,11 @@
+{
+    "name": "sdk-example",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "dependencies": {
+        "@sdkrs/sdk-client": "../sdk-client",
+        "@sdkrs/sdk-wasm": "../wasm"
+    }
+}

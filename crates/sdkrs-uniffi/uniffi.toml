@@ -1,0 +1,10 @@
+[bindings.kotlin]
+package_name = "com.sdkrs.sdk"
+cdylib_name = "sdkrs_uniffi"
+generate_immutable_records = true
+android = true
+
+[bindings.swift]
+ffi_module_name = "SdkrsFFI"
+module_name = "SdkrsSDK"
+generate_immutable_records = true

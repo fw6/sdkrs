@@ -1,0 +1,24 @@
+[package]
+name = "sdkrs-wasm"
+publish = false
+
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+console_error_panic_hook = "0.1.7"
+js-sys = "0.3.68"
+wasm-bindgen = { version = "0.2.91" }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.41"
+
+[lints]
+workspace = true

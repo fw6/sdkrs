@@ -1,0 +1,25 @@
+{
+    "name": "@sdkrs/sdk-wasm",
+    "version": "0.1.0",
+    "files": [
+        "sdkrs_wasm_bg.js",
+        "sdkrs_wasm_bg.wasm",
+        "sdkrs_wasm_bg.wasm.d.ts",
+        "sdkrs_wasm_bg.wasm.js",
+        "sdkrs_wasm.d.ts",
+        "sdkrs_wasm.js",
+        "index.js",
+        "node/sdkrs_wasm_bg.wasm",
+        "node/sdkrs_wasm_bg.wasm.d.ts",
+        "node/sdkrs_wasm.d.ts",
+        "node/sdkrs_wasm.js"
+    ],
+    "main": "node/sdkrs_wasm.js",
+    "module": "index.js",
+    "types": "sdkrs_wasm.d.ts",
+    "scripts": {},
+    "sideEffects": [
+        "./sdkrs_wasm.js",
+        "./snippets/*"
+    ]
+}
