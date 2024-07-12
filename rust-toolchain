@@ -4,10 +4,8 @@
 [toolchain]
 channel = "stable"
 targets = [
-    "x86_64-unknown-linux-gnu",
-    "aarch64-apple-darwin",
-    "x86_64-apple-darwin",
-    "x86_64-pc-windows-msvc",
+    # WASM
+    "wasm32-unknown-unknown",
 
     # iOS
     "aarch64-apple-ios",
@@ -15,15 +13,10 @@ targets = [
     "aarch64-apple-ios-sim",
 
     # Android
-    "armv7-linux-androideabi",
-    "i686-linux-android",
     "aarch64-linux-android",
+    "armv7-linux-androideabi",
     "x86_64-linux-android",
-    "x86_64-unknown-linux-gnu",
-    "x86_64-apple-darwin",
-    "aarch64-apple-darwin",
-    "x86_64-pc-windows-gnu",
-    "x86_64-pc-windows-msvc",
+    "i686-linux-android",
 ]
 components = ["clippy", "rustfmt"]
 profile = "minimal"
