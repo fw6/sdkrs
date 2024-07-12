@@ -1,0 +1,75 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        ":combinePatchMinorReleases",
+        ":dependencyDashboard",
+        ":separateMajorReleases",
+        "config:base",
+        "group:monorepos"
+    ],
+    "commitMessagePrefix": "[deps]:",
+    "commitMessageTopic": "{{depName}}",
+    "separateMajorMinor": true,
+    "prConcurrentLimit": 0,
+    "lockFileMaintenance": {
+        "enabled": true,
+        "schedule": [
+            "every 2nd week starting on the 2 week of the year before 4am on Monday"
+        ]
+    },
+    "schedule": [
+        "every 2nd week starting on the 2 week of the year before 4am on Monday"
+    ],
+    "vulnerabilityAlerts": {
+        "labels": [
+            "security"
+        ],
+        "reviewers": [
+            "team:team-appsec"
+        ]
+    },
+    "enabledManagers": [
+        "cargo",
+        "dockerfile",
+        "github-actions",
+        "npm"
+    ],
+    "packageRules": [
+        {
+            "groupName": "cargo non-major",
+            "matchManagers": [
+                "cargo"
+            ],
+            "matchUpdateTypes": [
+                "minor",
+                "patch"
+            ]
+        },
+        {
+            "groupName": "dockerfile minor",
+            "matchManagers": [
+                "dockerfile"
+            ],
+            "matchUpdateTypes": [
+                "minor",
+                "patch"
+            ]
+        },
+        {
+            "groupName": "gh minor",
+            "matchManagers": [
+                "github-actions"
+            ],
+            "matchUpdateTypes": [
+                "minor",
+                "patch"
+            ]
+        },
+        {
+            "matchManagers": [
+                "nvm"
+            ],
+            "rangeStrategy": "replace"
+        }
+    ]
+}
