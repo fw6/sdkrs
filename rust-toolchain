@@ -3,6 +3,7 @@
 
 [toolchain]
 channel = "stable"
+
 targets = [
     # WASM
     "wasm32-unknown-unknown",
