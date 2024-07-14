@@ -1,10 +1,9 @@
 use derive_builder::Builder;
 use lazy_static::lazy_static;
-use regex::Regex;
+use regex_lite::Regex;
 mod options;
 
-use options::{CropMode, DimensionLimit};
-use serde::{Deserialize, Serialize};
+use options::{CropMode, DimensionLimit, DynamicImageBuilderError};
 
 use self::options::{DynamicImageError, ImageFormat, WaterOpacity};
 
@@ -48,13 +47,13 @@ lazy_static! {
 }
 
 /// 动态图片配置
-#[derive(Clone, PartialEq, Default, Debug, Serialize, Deserialize, Builder)]
-#[builder(build_fn(validate = "Self::validate"), setter(into))]
-#[cfg_attr(
-    feature = "uniffi",
-    derive(uniffi::Object),
-    serde(rename_all = "camelCase", deny_unknown_fields)
+#[derive(Clone, PartialEq, Default, Debug, Builder)]
+#[builder(
+    build_fn(validate = "Self::validate", error = "DynamicImageBuilderError"),
+    setter(into)
 )]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
+#[cfg_attr(feature = "uniffi", builder(derive(uniffi::Object)))]
 pub struct DynamicImage {
     /// 原始图片链接
     raw_url: String,
@@ -199,33 +198,34 @@ impl DynamicImage {
     }
 }
 
+#[cfg_attr(feature = "uniffi", uniffi::export)]
 impl DynamicImageBuilder {
-    fn validate(&self) -> std::result::Result<(), String> {
+    fn validate(&self) -> std::result::Result<(), DynamicImageBuilderError> {
         if let Some(ref raw_url) = self.raw_url {
             if raw_url.is_empty() {
-                return Err("图片地址不能为空".to_string());
+                return Err(DynamicImageBuilderError::EmptyUrl);
             }
 
             if !(HOST_RE1.is_match(raw_url) || HOST_RE2.is_match(raw_url)) {
-                return Err("图片地址格式不正确".to_string());
+                return Err(DynamicImageBuilderError::InvalidUrl);
             }
         } else {
-            return Err("图片地址是必需的".to_string());
+            return Err(DynamicImageBuilderError::EmptyUrl);
         }
 
         if self.width.is_none() && self.height.is_none() {
-            return Err("宽和高不能同时为空".to_string());
+            return Err(DynamicImageBuilderError::EmptyDimension);
         }
 
         match self.width {
             Some(width) => match width {
                 Some(width) => {
                     if width < 1 {
-                        return Err("宽度必须 > 1".to_string());
+                        return Err(DynamicImageBuilderError::InvalidWidth);
                     }
                 }
                 None => match self.height {
-                    Some(None) => return Err("宽和高不能同时为空".to_string()),
+                    Some(None) => return Err(DynamicImageBuilderError::InvalidHeight),
                     _ => {}
                 },
             },
@@ -234,13 +234,13 @@ impl DynamicImageBuilder {
 
         if let Some(Some(height)) = self.height {
             if height < 1 {
-                return Err("高度必须 > 1".to_string());
+                return Err(DynamicImageBuilderError::InvalidHeight);
             }
         }
 
         if let Some(Some(quality)) = self.quality {
             if quality < 1 || quality > 100 {
-                return Err("图片质量必须在 1-100 之间".to_string());
+                return Err(DynamicImageBuilderError::InvalidQuality);
             }
         }
 

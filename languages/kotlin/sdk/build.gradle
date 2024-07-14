@@ -74,10 +74,10 @@ publishing {
     repositories {
         maven {
             name = "mavenRepository"
-            url = uri("http://maven.release.ctripcorp.com/nexus/content/repositories/Ctrip")
+            url = uri("https://maven.pkg.github.com/fw6/sdkrs")
             credentials {
-                username = System.getenv("GITLAB_GRADLE_ACTOR")
-                password = System.getenv("GITLAB_GRADLE_TOKEN")
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }

@@ -2,7 +2,7 @@
 # and how you can override the choices made herein.
 
 [toolchain]
-channel = "stable"
+channel = "1.79.0"
 
 targets = [
     # WASM

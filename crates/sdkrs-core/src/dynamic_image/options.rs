@@ -1,8 +1,9 @@
-use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
+use derive_builder::UninitializedFieldError;
+
 /// 支持的图片格式, 数据来源于: [格式转换](https://docs.fx.ctripcorp.com/docs/nephele/how-to/image/process/format)
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum ImageFormat {
     /// An Image in PNG Format
@@ -31,12 +32,8 @@ impl ImageFormat {
 }
 
 /// 预设的图片尺寸、质量、宽度限制
-#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(
-    feature = "uniffi",
-    derive(uniffi::Record),
-    serde(rename_all = "camelCase", deny_unknown_fields)
-)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct DimensionLimit {
     pub width: u32,
     pub height: u32,
@@ -45,7 +42,7 @@ pub struct DimensionLimit {
 }
 
 /// 水印透明度
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum WaterOpacity {
     R5,
@@ -76,7 +73,7 @@ impl Display for WaterOpacity {
 /// - D | C 指定宽高缩放
 /// - Y 指定宽高缩放
 /// - X 居中裁剪
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum CropMode {
     W,
@@ -116,4 +113,35 @@ pub enum DynamicImageError {
 
     #[error("图片尺寸不正确")]
     InvalidDimension,
+}
+
+#[derive(Debug, PartialEq, thiserror::Error)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
+pub enum DynamicImageBuilderError {
+    #[error("字段未初始化: {0}")]
+    UninitializedField(String),
+
+    #[error("图片地址不能为空")]
+    EmptyUrl,
+
+    #[error("图片地址格式不正确")]
+    InvalidUrl,
+
+    #[error("宽和高不能同时为空")]
+    EmptyDimension,
+
+    #[error("宽度必须 > 1")]
+    InvalidWidth,
+
+    #[error("高度必须 > 1")]
+    InvalidHeight,
+
+    #[error("图片质量必须在 1-100 之间")]
+    InvalidQuality,
+}
+
+impl From<UninitializedFieldError> for DynamicImageBuilderError {
+    fn from(e: UninitializedFieldError) -> Self {
+        Self::UninitializedField(e.field_name().into())
+    }
 }

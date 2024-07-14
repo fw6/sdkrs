@@ -19,9 +19,8 @@ uniffi = ["dep:uniffi"]
 
 [dependencies]
 thiserror.workspace = true
-regex.workspace = true
+regex-lite.workspace = true
 lazy_static.workspace = true
-serde = { workspace = true, features = ["derive"] }
 derive_builder.workspace = true
 wasm-bindgen = { version = "0.2.91" }
 
