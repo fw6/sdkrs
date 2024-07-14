@@ -1,19 +1,10 @@
-# See https://rust-lang.github.io/rustup/overrides.html for details on how this file works
-# and how you can override the choices made herein.
-
 [toolchain]
 channel = "nightly-2024-06-17"
-
 targets = [
-    # WASM
     "wasm32-unknown-unknown",
-
-    # iOS
     "aarch64-apple-ios",
     "x86_64-apple-ios",
     "aarch64-apple-ios-sim",
-
-    # Android
     "aarch64-linux-android",
     "armv7-linux-androideabi",
     "x86_64-linux-android",
