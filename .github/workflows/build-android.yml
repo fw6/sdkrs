@@ -1,0 +1,114 @@
+---
+name: Build Android
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - target: aarch64-linux-android
+          - target: armv7-linux-androideabi
+          - target: x86_64-linux-android
+          - target: i686-linux-android
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.settings.target }}-cargo
+
+      - name: Install Cross
+        run: cargo install cross --locked --git https://github.com/cross-rs/cross.git --rev 185398b1b885820515a212de720a306b08e2c8c9
+
+      - name: Build
+        env:
+          TARGET: ${{ matrix.settings.target }}
+        run: cross build -p sdkrs-uniffi --release --target=${{ matrix.settings.target }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ matrix.settings.target }}
+          path: ./target/${{ matrix.settings.target }}/release/libsdkrs_uniffi.so
+          if-no-files-found: error
+
+  combine:
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - name: Checkout repo (PR)
+        uses: actions/checkout@v4
+        if: github.event_name == 'pull_request'
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Checkout repo (Push)
+        uses: actions/checkout@v4
+        if: github.event_name == 'push'
+        with:
+          fetch-depth: 0
+
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@23bce251a8cd2ffc3c1075eaa2367cf899916d84 # v2.7.3
+        with:
+          key: cargo-combine-cache
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Move artifacts
+        working-directory: languages/kotlin/sdk/src/main/jniLibs
+        run: |
+          mkdir armeabi-v7a arm64-v8a x86 x86_64
+          mv /home/runner/work/sdk/sdk/android-armv7-linux-androideabi/libsdkrs_uniffi.so ./armeabi-v7a/libsdkrs_uniffi.so
+          mv /home/runner/work/sdk/sdk/android-aarch64-linux-android/libsdkrs_uniffi.so ./arm64-v8a/libsdkrs_uniffi.so
+          mv /home/runner/work/sdk/sdk/android-i686-linux-android/libsdkrs_uniffi.so ./x86/libsdkrs_uniffi.so
+          mv /home/runner/work/sdk/sdk/android-x86_64-linux-android/libsdkrs_uniffi.so ./x86_64/libsdkrs_uniffi.so
+
+      - name: Generate bindings
+        working-directory: languages/kotlin
+        run: ./build-schemas.sh
+
+      - name: Publish
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          arguments: sdk:publish
+          build-root-directory: languages/kotlin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
