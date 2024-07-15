@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace 'com.ctrip.myapplication'
-    compileSdk 34
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.ctrip.myapplication"
-        minSdk 28
-        targetSdk 34
+        minSdk 23
+        targetSdk 30
         versionCode 1
         versionName "1.0"
 
