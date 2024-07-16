@@ -1,6 +1,7 @@
 uniffi::setup_scaffolding!();
 use log::trace;
-pub use sdkrs_core::dynamic_image::DynamicImageBuilder;
+pub use sdkrs_core::dynamic_image::DynamicImage;
+pub mod error;
 
 pub fn init_logger() {
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
@@ -18,4 +19,10 @@ pub fn init_logger() {
     );
 
     trace!("\n\n INIT LOGGER ON RUST");
+}
+
+#[uniffi::export]
+pub fn get_dynamic_image_url(d: DynamicImage) -> error::Result<String> {
+    init_logger();
+    Ok(d.format()?)
 }

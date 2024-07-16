@@ -1,11 +1,11 @@
+#[cfg(feature = "builder")]
 use derive_builder::Builder;
 use lazy_static::lazy_static;
 use regex_lite::Regex;
 mod options;
 
-use options::{CropMode, DimensionLimit, DynamicImageBuilderError};
-
-use self::options::{DynamicImageError, ImageFormat, WaterOpacity};
+use self::options::{CropMode, DimensionLimit, ImageFormat, WaterOpacity};
+pub use options::DynamicImageError;
 
 type Result<T, E = DynamicImageError> = std::result::Result<T, E>;
 
@@ -47,58 +47,67 @@ lazy_static! {
 }
 
 /// 动态图片配置
-#[derive(Clone, PartialEq, Default, Debug, Builder)]
-#[builder(
-    build_fn(validate = "Self::validate", error = "DynamicImageBuilderError"),
+#[derive(Clone, PartialEq, Default, Debug)]
+#[cfg_attr(
+    feature = "builder",
+    derive(Builder),
+    build_fn(validate = "Self::validate", error = "DynamicImageError"),
     setter(into)
 )]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
-#[cfg_attr(feature = "uniffi", builder(derive(uniffi::Object)))]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct DynamicImage {
     /// 原始图片链接
-    raw_url: String,
+    pub raw_url: String,
 
     /// 需要配置的图片宽度
-    #[builder(setter(strip_option), default = "None")]
-    width: Option<u32>,
+    #[cfg_attr(feature = "builder", builder(setter(strip_option), default = "None"))]
+    pub width: Option<u32>,
 
     /// 需要配置的图片高度
-    #[builder(setter(strip_option), default = "None")]
-    height: Option<u32>,
+    #[cfg_attr(feature = "builder", builder(setter(strip_option), default = "None"))]
+    pub height: Option<u32>,
 
     /// 切图模式, 默认为等比缩略
-    #[builder(default = "CropMode::W")]
-    crop_mode: CropMode,
+    #[cfg_attr(feature = "builder", builder(default = "Some(CropMode::default())"))]
+    pub crop_mode: Option<CropMode>,
 
     /// 是否重置为 png (会丢失透明通道)
-    #[builder(default = "false")]
-    reset_png: bool,
+    #[cfg_attr(feature = "builder", builder(default = "None"))]
+    pub reset_png: Option<bool>,
 
     /// 水印透明度指令
-    #[builder(setter(strip_option), default = "None")]
-    water_opacity: Option<WaterOpacity>,
+    #[cfg_attr(feature = "builder", builder(setter(strip_option), default = "None"))]
+    pub water_opacity: Option<WaterOpacity>,
 
     /// 图片格式, 如果设置了`reset_png`则被忽略
-    #[builder(setter(strip_option), default = "None")]
-    format: Option<ImageFormat>,
+    #[cfg_attr(feature = "builder", builder(setter(strip_option), default = "None"))]
+    pub format: Option<ImageFormat>,
 
     /// 最终生成链接的查询参数
-    #[builder(setter(strip_option), default = "None")]
-    query: Option<String>,
+    #[cfg_attr(feature = "builder", builder(setter(strip_option), default = "None"))]
+    pub query: Option<String>,
 
     /// 图片尺寸限制, 不传使用内部预设值
-    #[builder(setter(strip_option), default = "None")]
-    limits: Option<Vec<DimensionLimit>>,
+    #[cfg_attr(feature = "builder", builder(setter(strip_option), default = "None"))]
+    pub limits: Option<Vec<DimensionLimit>>,
 
     /// 图片质量
-    #[builder(setter(strip_option), default = "None")]
-    quality: Option<u8>,
+    #[cfg_attr(feature = "builder", builder(setter(strip_option), default = "None"))]
+    pub quality: Option<u8>,
 }
 
-#[cfg_attr(feature = "uniffi", uniffi::export)]
 impl DynamicImage {
     /// 根据配置项, 生成新的图片链接
-    pub fn get_url(&self) -> Result<String> {
+    pub fn format(&self) -> Result<String> {
+        if cfg!(not(feature = "builder")) {
+            validate(
+                Some(self.raw_url.clone()),
+                Some(self.width),
+                Some(self.height),
+                Some(self.quality),
+            )?;
+        }
+
         let caps;
         if self.raw_url.contains("/fd/") {
             // 老的 /target/fd/ 打头的这种URL，文件名长度30，URL可能匹配_Q629 的文件名。eg：https://images4.c-ctrip.com/target/fd/hotel/g1/M0A/6B/AA/CghzflViwNqAIHWzAAbl8S7rW_Q629.jpg
@@ -150,7 +159,7 @@ impl DynamicImage {
         };
 
         // 文件扩展名, 如果设置了`reset_png`则强制为 jpg
-        let ext = if self.reset_png {
+        let ext = if let Some(true) = self.reset_png {
             ".jpg"
         } else {
             &self.format.map_or_else(
@@ -187,7 +196,7 @@ impl DynamicImage {
         Ok(format!(
             "https://{}_{}_{}_{}{}{}{}{}",
             prefix,
-            self.crop_mode,
+            self.crop_mode.unwrap_or(CropMode::default()),
             dimension_limit.width,
             dimension_limit.height,
             water_opacity,
@@ -198,53 +207,67 @@ impl DynamicImage {
     }
 }
 
-#[cfg_attr(feature = "uniffi", uniffi::export)]
-impl DynamicImageBuilder {
-    fn validate(&self) -> std::result::Result<(), DynamicImageBuilderError> {
-        if let Some(ref raw_url) = self.raw_url {
-            if raw_url.is_empty() {
-                return Err(DynamicImageBuilderError::EmptyUrl);
-            }
-
-            if !(HOST_RE1.is_match(raw_url) || HOST_RE2.is_match(raw_url)) {
-                return Err(DynamicImageBuilderError::InvalidUrl);
-            }
-        } else {
-            return Err(DynamicImageBuilderError::EmptyUrl);
+fn validate(
+    raw_url: Option<String>,
+    width: Option<Option<u32>>,
+    height: Option<Option<u32>>,
+    quality: Option<Option<u8>>,
+) -> Result<()> {
+    if let Some(ref raw_url) = raw_url {
+        if raw_url.is_empty() {
+            return Err(DynamicImageError::EmptyUrl);
         }
 
-        if self.width.is_none() && self.height.is_none() {
-            return Err(DynamicImageBuilderError::EmptyDimension);
+        if !(HOST_RE1.is_match(raw_url) || HOST_RE2.is_match(raw_url)) {
+            return Err(DynamicImageError::InvalidUrl);
         }
+    } else {
+        return Err(DynamicImageError::EmptyUrl);
+    }
 
-        match self.width {
-            Some(width) => match width {
-                Some(width) => {
-                    if width < 1 {
-                        return Err(DynamicImageBuilderError::InvalidWidth);
-                    }
+    if width.is_none() && height.is_none() {
+        return Err(DynamicImageError::EmptyDimension);
+    }
+
+    match width {
+        Some(width) => match width {
+            Some(width) => {
+                if width < 1 {
+                    return Err(DynamicImageError::InvalidWidth);
                 }
-                None => match self.height {
-                    Some(None) => return Err(DynamicImageBuilderError::InvalidHeight),
-                    _ => {}
-                },
+            }
+            None => match height {
+                Some(None) => return Err(DynamicImageError::InvalidHeight),
+                _ => {}
             },
-            _ => {}
-        }
+        },
+        _ => {}
+    }
 
-        if let Some(Some(height)) = self.height {
-            if height < 1 {
-                return Err(DynamicImageBuilderError::InvalidHeight);
-            }
+    if let Some(Some(height)) = height {
+        if height < 1 {
+            return Err(DynamicImageError::InvalidHeight);
         }
+    }
 
-        if let Some(Some(quality)) = self.quality {
-            if quality < 1 || quality > 100 {
-                return Err(DynamicImageBuilderError::InvalidQuality);
-            }
+    if let Some(Some(quality)) = quality {
+        if quality < 1 || quality > 100 {
+            return Err(DynamicImageError::InvalidQuality);
         }
+    }
 
-        Ok(())
+    Ok(())
+}
+
+#[cfg(feature = "builder")]
+impl DynamicImageBuilder {
+    fn validate(&self) -> Result<()> {
+        validate(
+            Some(self.raw_url.clone()),
+            self.width,
+            self.height,
+            self.quality,
+        )
     }
 }
 
@@ -265,6 +288,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "builder")]
     fn test_builder() {
         // url不能为空
         assert!(DynamicImageBuilder::default().build().is_err());
@@ -290,13 +314,14 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "builder")]
     fn test_get_url() {
         let output = DynamicImageBuilder::default()
             .raw_url(OLD_URLS.get(0).unwrap().to_string())
             .width(240u32)
             .build()
             .unwrap()
-            .get_url()
+            .format()
             .unwrap();
 
         println!("{:?}", output);

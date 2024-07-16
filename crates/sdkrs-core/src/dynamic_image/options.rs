@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+#[cfg(feature = "builder")]
 use derive_builder::UninitializedFieldError;
 
 /// 支持的图片格式, 数据来源于: [格式转换](https://docs.fx.ctripcorp.com/docs/nephele/how-to/image/process/format)
@@ -37,8 +38,8 @@ impl ImageFormat {
 pub struct DimensionLimit {
     pub width: u32,
     pub height: u32,
-    pub quality: Option<u8>,
     pub limit: u32,
+    pub quality: Option<u8>,
 }
 
 /// 水印透明度
@@ -113,19 +114,12 @@ pub enum DynamicImageError {
 
     #[error("图片尺寸不正确")]
     InvalidDimension,
-}
 
-#[derive(Debug, PartialEq, thiserror::Error)]
-#[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
-pub enum DynamicImageBuilderError {
     #[error("字段未初始化: {0}")]
     UninitializedField(String),
 
     #[error("图片地址不能为空")]
     EmptyUrl,
-
-    #[error("图片地址格式不正确")]
-    InvalidUrl,
 
     #[error("宽和高不能同时为空")]
     EmptyDimension,
@@ -140,7 +134,8 @@ pub enum DynamicImageBuilderError {
     InvalidQuality,
 }
 
-impl From<UninitializedFieldError> for DynamicImageBuilderError {
+#[cfg(feature = "builder")]
+impl From<UninitializedFieldError> for DynamicImageError {
     fn from(e: UninitializedFieldError) -> Self {
         Self::UninitializedField(e.field_name().into())
     }
