@@ -6,5 +6,5 @@ android = true
 
 [bindings.swift]
 ffi_module_name = "SdkrsFFI"
-module_name = "SdkrsSDK"
+module_name = "Sdkrs"
 generate_immutable_records = true
