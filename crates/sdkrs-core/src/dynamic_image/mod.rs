@@ -289,19 +289,19 @@ mod tests {
 
         // 宽高不能同时为空
         assert!(DynamicImageBuilder::default()
-            .raw_url(OLD_URLS.get(0).unwrap().to_string())
+            .raw_url(OLD_URLS.first().unwrap().to_string())
             .build()
             .is_err());
 
         // 宽必须 > 0
         assert!(DynamicImageBuilder::default()
-            .raw_url(OLD_URLS.get(0).unwrap().to_string())
+            .raw_url(OLD_URLS.first().unwrap().to_string())
             .width(0u32)
             .build()
             .is_err());
 
         assert!(DynamicImageBuilder::default()
-            .raw_url(OLD_URLS.get(0).unwrap().to_string())
+            .raw_url(OLD_URLS.first().unwrap().to_string())
             .width(240u32)
             .build()
             .is_ok());
@@ -311,7 +311,7 @@ mod tests {
     #[cfg(feature = "builder")]
     fn test_get_url() {
         let output = DynamicImageBuilder::default()
-            .raw_url(OLD_URLS.get(0).unwrap().to_string())
+            .raw_url(OLD_URLS.first().unwrap().to_string())
             .width(240u32)
             .build()
             .unwrap()
