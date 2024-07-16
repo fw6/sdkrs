@@ -1,5 +1,6 @@
-use sdkrs_core::dynamic_image::DynamicImageError;
 use std::fmt::{Display, Formatter};
+
+use sdkrs_core::dynamic_image::DynamicImageError;
 
 #[derive(uniffi::Error, Debug)]
 #[uniffi(flat_error)]
@@ -9,7 +10,7 @@ pub enum SdkrsError {
 
 impl From<DynamicImageError> for SdkrsError {
     fn from(e: DynamicImageError) -> Self {
-        Self::DE(e.into())
+        Self::DE(e)
     }
 }
 

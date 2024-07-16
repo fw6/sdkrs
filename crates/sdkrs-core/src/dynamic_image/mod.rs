@@ -4,8 +4,9 @@ use lazy_static::lazy_static;
 use regex_lite::Regex;
 mod options;
 
-use self::options::{CropMode, DimensionLimit, ImageFormat, WaterOpacity};
 pub use options::DynamicImageError;
+
+use self::options::{CropMode, DimensionLimit, ImageFormat, WaterOpacity};
 
 type Result<T, E = DynamicImageError> = std::result::Result<T, E>;
 
@@ -51,8 +52,10 @@ lazy_static! {
 #[cfg_attr(
     feature = "builder",
     derive(Builder),
-    build_fn(validate = "Self::validate", error = "DynamicImageError"),
-    setter(into)
+    builder(
+        build_fn(validate = "Self::validate", error = "DynamicImageError"),
+        setter(into)
+    )
 )]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct DynamicImage {
@@ -108,21 +111,16 @@ impl DynamicImage {
             )?;
         }
 
-        let caps;
-        if self.raw_url.contains("/fd/") {
+        let caps = if self.raw_url.contains("/fd/") {
             // 老的 /target/fd/ 打头的这种URL，文件名长度30，URL可能匹配_Q629 的文件名。eg：https://images4.c-ctrip.com/target/fd/hotel/g1/M0A/6B/AA/CghzflViwNqAIHWzAAbl8S7rW_Q629.jpg
-            caps = OLD_URL_RE
+            OLD_URL_RE
                 .captures(&self.raw_url)
-                .ok_or(DynamicImageError::InvalidUrl)?;
+                .ok_or(DynamicImageError::InvalidUrl)?
         } else {
-            caps = URL_RE
+            URL_RE
                 .captures(&self.raw_url)
-                .ok_or(DynamicImageError::InvalidUrl)?;
-        }
-
-        if caps.len() <= 0 {
-            return Err(DynamicImageError::InvalidUrl);
-        }
+                .ok_or(DynamicImageError::InvalidUrl)?
+        };
 
         // 根据宽高的最大值, 获取对应的预设
         let dimension_limit = {
@@ -162,7 +160,7 @@ impl DynamicImage {
         let ext = if let Some(true) = self.reset_png {
             ".jpg"
         } else {
-            &self.format.map_or_else(
+            self.format.map_or_else(
                 || caps.get(24).map_or(".jpg", |s| s.as_str()),
                 |f| {
                     f.extensions_str()
@@ -196,7 +194,7 @@ impl DynamicImage {
         Ok(format!(
             "https://{}_{}_{}_{}{}{}{}{}",
             prefix,
-            self.crop_mode.unwrap_or(CropMode::default()),
+            self.crop_mode.map_or(CropMode::default(), |v| v),
             dimension_limit.width,
             dimension_limit.height,
             water_opacity,
@@ -229,19 +227,20 @@ fn validate(
         return Err(DynamicImageError::EmptyDimension);
     }
 
-    match width {
-        Some(width) => match width {
-            Some(width) => {
-                if width < 1 {
-                    return Err(DynamicImageError::InvalidWidth);
+    if let Some(width) = width {
+        if let Some(width) = width {
+            if width < 1 {
+                return Err(DynamicImageError::InvalidWidth);
+            }
+        } else if let Some(height) = height {
+            if height.is_none() {
+                return Err(DynamicImageError::InvalidHeight);
+            } else if let Some(height) = height {
+                if height < 1 {
+                    return Err(DynamicImageError::InvalidHeight);
                 }
             }
-            None => match height {
-                Some(None) => return Err(DynamicImageError::InvalidHeight),
-                _ => {}
-            },
-        },
-        _ => {}
+        }
     }
 
     if let Some(Some(height)) = height {
@@ -251,7 +250,7 @@ fn validate(
     }
 
     if let Some(Some(quality)) = quality {
-        if quality < 1 || quality > 100 {
+        if !(1..=100).contains(&quality) {
             return Err(DynamicImageError::InvalidQuality);
         }
     }
@@ -262,12 +261,7 @@ fn validate(
 #[cfg(feature = "builder")]
 impl DynamicImageBuilder {
     fn validate(&self) -> Result<()> {
-        validate(
-            Some(self.raw_url.clone()),
-            self.width,
-            self.height,
-            self.quality,
-        )
+        validate(self.raw_url.clone(), self.width, self.height, self.quality)
     }
 }
 
@@ -275,7 +269,7 @@ impl DynamicImageBuilder {
 mod tests {
     use super::*;
 
-    const OLD_URLS: [&'static str; 2] = [
+    const OLD_URLS: [&str; 2] = [
         "https://youimg1.c-ctrip.com/target/fd/tg/g3/M07/01/AD/CggYGVXdMjCAYC76AE_wQZoMows816.jpg",
         "http://youimg1.c-ctrip.com/target/fd/tg/g3/M07/01/AD/CggYGVXdMjCAYC76AE_wQZoMows816.jpg",
     ];

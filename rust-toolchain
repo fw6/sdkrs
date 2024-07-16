@@ -2,7 +2,7 @@
 # and how you can override the choices made herein.
 
 [toolchain]
-channel = "1.79.0"
+channel = "nightly-2024-07-13"
 
 targets = [
     # WASM

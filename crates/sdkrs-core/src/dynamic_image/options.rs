@@ -74,9 +74,10 @@ impl Display for WaterOpacity {
 /// - D | C 指定宽高缩放
 /// - Y 指定宽高缩放
 /// - X 居中裁剪
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 pub enum CropMode {
+    #[default]
     W,
     Z,
     R,
@@ -97,12 +98,6 @@ impl Display for CropMode {
             CropMode::Y => write!(f, "Y"),
             CropMode::X => write!(f, "X"),
         }
-    }
-}
-
-impl Default for CropMode {
-    fn default() -> Self {
-        CropMode::W
     }
 }
 
