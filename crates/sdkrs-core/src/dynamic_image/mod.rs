@@ -11,13 +11,13 @@ use self::options::{CropMode, DimensionLimit, ImageFormat, WaterOpacity};
 type Result<T, E = DynamicImageError> = std::result::Result<T, E>;
 
 lazy_static! {
-    static ref URL_RE: Regex = Regex::new(r"https?://(.+?)((_M)([a-zA-Z0-9]+)(_[1-9])?)?((_[RCZWDYX]_)([0-9]+)_([0-9]+))?((_R)([0-9]+))?((_Q)([0-9]+))?((_M)([a-zA-Z0-9]+)(_[1-9])?)?((_P)([a-zA-Z0-9]+))?(_D)?((\.)(jpg|jpeg|gif|png|Jpg|JPG|webp))(_\.webp)?(_D)?(\?.*)?$").unwrap();
+    static ref URL_RE: Regex = Regex::new(r"https?://(.+?)((_M)([a-zA-Z0-9]+)(_[1-9])?)?((_[RCZWDYX]_)([0-9]+)_([0-9]+))?((_R)([0-9]+))?((_Q)([0-9]+))?((_M)([a-zA-Z0-9]+)(_[1-9])?)?((_P)([a-zA-Z0-9]+))?(_D)?((\.)(jpg|jpeg|gif|png|Jpg|JPG|webp))(_\.webp)?(_D)?(\?.*)?$").expect("failed to compile URL_RE");
 
-    static ref OLD_URL_RE: Regex = Regex::new(r"https?://(.+?[^/]{30})((_M)([a-zA-Z0-9]+)(_[1-9])?)?((_[RCZWDYX]_)([0-9]+)_([0-9]+))?((_R)([0-9]+))?((_Q)([0-9]+))?((_M)([a-zA-Z0-9]+)(_[1-9])?)?((_P)([a-zA-Z0-9]+))?(_D)?((\.)(jpg|jpeg|gif|png|Jpg|JPG|webp))(_\.webp)?(_D)?(\?.*)?$").unwrap();
+    static ref OLD_URL_RE: Regex = Regex::new(r"https?://(.+?[^/]{30})((_M)([a-zA-Z0-9]+)(_[1-9])?)?((_[RCZWDYX]_)([0-9]+)_([0-9]+))?((_R)([0-9]+))?((_Q)([0-9]+))?((_M)([a-zA-Z0-9]+)(_[1-9])?)?((_P)([a-zA-Z0-9]+))?(_D)?((\.)(jpg|jpeg|gif|png|Jpg|JPG|webp))(_\.webp)?(_D)?(\?.*)?$").expect("failed to compile OLD_URL_RE");
 
-    static ref HOST_RE1: Regex = Regex::new(r"https?://((images4|youimg1|(dimg\d{2,})).c-ctrip|(youimg1|ak-d).tripcdn|nephele.(trip|ctrip)).com").unwrap();
+    static ref HOST_RE1: Regex = Regex::new(r"https?://((images4|youimg1|(dimg\d{2,})).c-ctrip|(youimg1|ak-d).tripcdn|nephele.(trip|ctrip)).com").expect("failed to compile HOST_RE1");
 
-    static ref HOST_RE2: Regex = Regex::new(r"https?://(dimg\d{0,}).(uat|fws).qa.nt.(ctripcorp|tripqate).com").unwrap();
+    static ref HOST_RE2: Regex = Regex::new(r"https?://(dimg\d{0,}).(uat|fws).qa.nt.(ctripcorp|tripqate).com").expect("failed to compile HOST_RE2");
 
     static ref PRESET_LIMITS: Vec<DimensionLimit> = vec![
         DimensionLimit {
