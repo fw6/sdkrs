@@ -12,6 +12,8 @@ rust-version = "1.78"
 
 [workspace.lints.clippy]
 too_many_arguments = "allow"
+unused_async = "deny"
+unwrap_used = "deny"
 
 [workspace.dependencies]
 thiserror = "1.0"
@@ -23,7 +25,7 @@ lazy_static = "1.4.0"
 log = "0.4.20"
 env_logger = "0.11.1"
 
-uniffi = "0.28"
+uniffi = "=0.28.0"
 
 [profile.dev]
 opt-level = 1
@@ -32,14 +34,5 @@ opt-level = 1
 opt-level = 2
 
 [profile.release]
-# https://doc.rust-lang.org/cargo/reference/profiles.html#debug
-debug = true
-opt-level = "s"
 lto = "thin"
 codegen-units = 1
-strip = true
-
-# The profile that 'cargo dist' will build with
-[profile.dist]
-inherits = "release"
-lto = "thin"

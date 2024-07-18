@@ -1,6 +1,17 @@
+buildscript {
+    ext.build = [
+        ndkVersion            : "26.2.11394342",
+
+        compileSdk     : 34,
+        targetSdk      : 34,
+        minSdk         : 23,
+        jvmTargetCompatibility: 17,
+    ]
+}
+
 plugins {
-    id 'com.android.application' version '8.4.0' apply false
-    id 'com.android.library' version '8.4.0' apply false
+    id 'com.android.application' version '8.5.0' apply false
+    id 'com.android.library' version '8.5.0' apply false
     id 'org.jetbrains.kotlin.android' version '1.9.23' apply false
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.9.23' apply false
 }

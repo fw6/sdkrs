@@ -12,6 +12,8 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
 rootProject.name = "My Application"
+rootProject.buildFileName = 'build.gradle'
 include ':app'
 include ':sdk'

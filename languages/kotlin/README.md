@@ -35,4 +35,9 @@ mv ../../target/i686-linux-android/release/libsdkrs_uniffi.so ./sdk/src/main/jni
 
 ### Publish
 
-TODO
+```bash
+export GITHUB_ACTOR=username
+export GITHUB_TOKEN=token
+
+./gradlew sdk:publish
+```

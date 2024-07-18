@@ -5,13 +5,14 @@ plugins {
 }
 
 android {
-    namespace 'com.ctrip.myapplication'
-    compileSdk 33
+    namespace 'com.sdkrs.myapplication'
+    compileSdk rootProject.ext.build.compileSdk
 
     defaultConfig {
-        applicationId "com.ctrip.myapplication"
-        minSdk 23
-        targetSdk 30
+        applicationId "com.sdkrs.myapplication"
+        minSdk rootProject.ext.build['minSdk']
+        targetSdk rootProject.ext.build['targetSdk']
+
         versionCode 1
         versionName "1.0"
 
