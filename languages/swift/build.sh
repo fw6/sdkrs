@@ -45,3 +45,6 @@ xcodebuild -create-xcframework \
 
 # Cleanup temporary files
 rm -r tmp
+
+# Zip it all up into a bundle for distribution.
+zip -9 -r SdkrsFFI.xcframework.zip SdkrsFFI.xcframework

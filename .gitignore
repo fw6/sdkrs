@@ -94,8 +94,11 @@ bld/
 *.dll
 *.class
 
+node_modules/
+
 # Uniffi
 languages/swift/SdkrsFFI.xcframework
+*.xcframework.zip
 languages/swift/tmp
 languages/swift/.build
 languages/swift/.swiftpm
