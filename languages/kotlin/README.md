@@ -35,9 +35,15 @@ mv ../../target/i686-linux-android/release/libsdkrs_uniffi.so ./sdk/src/main/jni
 
 ### Publish
 
+1. Create a new release on GitHub
 ```bash
 export GITHUB_ACTOR=username
 export GITHUB_TOKEN=token
 
 ./gradlew sdk:publish
 ```
+
+2. Build the SDK as an AAR
+2.1 Open the project in Android Studio
+2.2 Build the project: Build -> Rebuild Project
+2.3 Find the AAR file in `sdk/build/outputs/aar/sdk-release.aar`
