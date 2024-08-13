@@ -48,3 +48,14 @@ rm -r tmp
 
 # Zip it all up into a bundle for distribution.
 zip -9 -r SdkrsFFI.xcframework.zip SdkrsFFI.xcframework
+
+# Compute checksum
+
+swift package compute-checksum ./SdkrsFFI.xcframework.zip
+
+cat << EOF
+发布:
+1. 打开sdkrs-swift
+2. 修改Package.swift中的SdkrsFFI的checksum(上一步计算所得)
+3. 替换Sources/SdkrsSdk中的文件
+EOF
