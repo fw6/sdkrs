@@ -14,9 +14,9 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
-import com.sdkrs.core.DynamicImage
+import com.sdkrs.core.NepheleImage
 import com.sdkrs.myapplication.ui.theme.MyApplicationTheme
-import com.sdkrs.sdk.getDynamicImageUrl
+import com.sdkrs.sdk.processNepheleImageUrl
 
 class MainActivity : FragmentActivity() {
     val TAG: String = "MainActivity"
@@ -40,17 +40,9 @@ class MainActivity : FragmentActivity() {
                         Divider()
 
                         Button(onClick = {
-                            Log.i(TAG, getDynamicImageUrl(DynamicImage(
+                            Log.i(TAG, processNepheleImageUrl(NepheleImage(
                                 "https://youimg1.c-ctrip.com/target/fd/tg/g3/M07/01/AD/CggYGVXdMjCAYC76AE_wQZoMows816.jpg",
                                 240u,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
                             )))
                         }) {
                             Text(text = "call dynamic image url")

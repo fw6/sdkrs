@@ -45,5 +45,6 @@ export GITHUB_TOKEN=token
 
 2. Build the SDK as an AAR
 2.1 Open the project in Android Studio
-2.2 Build the project: Build -> Rebuild Project
-2.3 Find the AAR file in `sdk/build/outputs/aar/sdk-release.aar`
+2.2 Select build variant: Build -> Select Build Variant, change `:sdk` to `release`
+2.3 Build the project: Build -> Rebuild Project
+2.4 Find the AAR file in `sdk/build/outputs/aar/sdk-release.aar`
