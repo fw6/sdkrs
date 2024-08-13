@@ -103,7 +103,7 @@ impl Display for CropMode {
 
 #[derive(Debug, PartialEq, thiserror::Error)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
-pub enum DynamicImageError {
+pub enum NepheleImageError {
     #[error("url不正确")]
     InvalidUrl,
 
@@ -130,7 +130,7 @@ pub enum DynamicImageError {
 }
 
 #[cfg(feature = "builder")]
-impl From<UninitializedFieldError> for DynamicImageError {
+impl From<UninitializedFieldError> for NepheleImageError {
     fn from(e: UninitializedFieldError) -> Self {
         Self::UninitializedField(e.field_name().into())
     }

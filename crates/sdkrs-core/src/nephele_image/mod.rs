@@ -4,11 +4,11 @@ use lazy_static::lazy_static;
 use regex_lite::Regex;
 mod options;
 
-pub use options::DynamicImageError;
+pub use options::NepheleImageError;
 
 use self::options::{CropMode, DimensionLimit, ImageFormat, WaterOpacity};
 
-type Result<T, E = DynamicImageError> = std::result::Result<T, E>;
+type Result<T, E = NepheleImageError> = std::result::Result<T, E>;
 
 lazy_static! {
     static ref URL_RE: Regex = Regex::new(r"https?://(.+?)((_M)([a-zA-Z0-9]+)(_[1-9])?)?((_[RCZWDYX]_)([0-9]+)_([0-9]+))?((_R)([0-9]+))?((_Q)([0-9]+))?((_M)([a-zA-Z0-9]+)(_[1-9])?)?((_P)([a-zA-Z0-9]+))?(_D)?((\.)(jpg|jpeg|gif|png|Jpg|JPG|webp))(_\.webp)?(_D)?(\?.*)?$").expect("failed to compile URL_RE");
@@ -47,59 +47,68 @@ lazy_static! {
     ];
 }
 
-/// 动态图片配置
+/// Nephele图片服务生成的动态图片处理命令
 #[derive(Clone, PartialEq, Default, Debug)]
 #[cfg_attr(
     feature = "builder",
     derive(Builder),
     builder(
-        build_fn(validate = "Self::validate", error = "DynamicImageError"),
+        build_fn(validate = "Self::validate", error = "NepheleImageError"),
         setter(into)
     )
 )]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
-pub struct DynamicImage {
+pub struct NepheleImage {
     /// 原始图片链接
     pub raw_url: String,
 
     /// 需要配置的图片宽度
     #[cfg_attr(feature = "builder", builder(setter(strip_option), default = "None"))]
+    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
     pub width: Option<u32>,
 
     /// 需要配置的图片高度
     #[cfg_attr(feature = "builder", builder(setter(strip_option), default = "None"))]
+    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
     pub height: Option<u32>,
 
     /// 切图模式, 默认为等比缩略
     #[cfg_attr(feature = "builder", builder(default = "Some(CropMode::default())"))]
+    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
     pub crop_mode: Option<CropMode>,
 
     /// 是否重置为 png (会丢失透明通道)
     #[cfg_attr(feature = "builder", builder(default = "None"))]
+    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
     pub reset_png: Option<bool>,
 
     /// 水印透明度指令
     #[cfg_attr(feature = "builder", builder(setter(strip_option), default = "None"))]
+    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
     pub water_opacity: Option<WaterOpacity>,
 
     /// 图片格式, 如果设置了`reset_png`则被忽略
     #[cfg_attr(feature = "builder", builder(setter(strip_option), default = "None"))]
+    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
     pub format: Option<ImageFormat>,
 
     /// 最终生成链接的查询参数
     #[cfg_attr(feature = "builder", builder(setter(strip_option), default = "None"))]
+    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
     pub query: Option<String>,
 
     /// 图片尺寸限制, 不传使用内部预设值
     #[cfg_attr(feature = "builder", builder(setter(strip_option), default = "None"))]
+    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
     pub limits: Option<Vec<DimensionLimit>>,
 
     /// 图片质量
     #[cfg_attr(feature = "builder", builder(setter(strip_option), default = "None"))]
+    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
     pub quality: Option<u8>,
 }
 
-impl DynamicImage {
+impl NepheleImage {
     /// 根据配置项, 生成新的图片链接
     pub fn format(&self) -> Result<String> {
         if cfg!(not(feature = "builder")) {
@@ -115,11 +124,11 @@ impl DynamicImage {
             // 老的 /target/fd/ 打头的这种URL，文件名长度30，URL可能匹配_Q629 的文件名。eg：https://images4.c-ctrip.com/target/fd/hotel/g1/M0A/6B/AA/CghzflViwNqAIHWzAAbl8S7rW_Q629.jpg
             OLD_URL_RE
                 .captures(&self.raw_url)
-                .ok_or(DynamicImageError::InvalidUrl)?
+                .ok_or(NepheleImageError::InvalidUrl)?
         } else {
             URL_RE
                 .captures(&self.raw_url)
-                .ok_or(DynamicImageError::InvalidUrl)?
+                .ok_or(NepheleImageError::InvalidUrl)?
         };
 
         // 根据宽高的最大值, 获取对应的预设
@@ -134,7 +143,7 @@ impl DynamicImage {
             limits
                 .iter()
                 .find(|preset| preset.limit < max_side)
-                .ok_or(DynamicImageError::InvalidDimension)
+                .ok_or(NepheleImageError::InvalidDimension)
         }?;
 
         // 图片原始地址 (不包含任何配置、扩展名)
@@ -213,31 +222,31 @@ fn validate(
 ) -> Result<()> {
     if let Some(ref raw_url) = raw_url {
         if raw_url.is_empty() {
-            return Err(DynamicImageError::EmptyUrl);
+            return Err(NepheleImageError::EmptyUrl);
         }
 
         if !(HOST_RE1.is_match(raw_url) || HOST_RE2.is_match(raw_url)) {
-            return Err(DynamicImageError::InvalidUrl);
+            return Err(NepheleImageError::InvalidUrl);
         }
     } else {
-        return Err(DynamicImageError::EmptyUrl);
+        return Err(NepheleImageError::EmptyUrl);
     }
 
     if width.is_none() && height.is_none() {
-        return Err(DynamicImageError::EmptyDimension);
+        return Err(NepheleImageError::EmptyDimension);
     }
 
     if let Some(width) = width {
         if let Some(width) = width {
             if width < 1 {
-                return Err(DynamicImageError::InvalidWidth);
+                return Err(NepheleImageError::InvalidWidth);
             }
         } else if let Some(height) = height {
             if height.is_none() {
-                return Err(DynamicImageError::InvalidHeight);
+                return Err(NepheleImageError::InvalidHeight);
             } else if let Some(height) = height {
                 if height < 1 {
-                    return Err(DynamicImageError::InvalidHeight);
+                    return Err(NepheleImageError::InvalidHeight);
                 }
             }
         }
@@ -245,13 +254,13 @@ fn validate(
 
     if let Some(Some(height)) = height {
         if height < 1 {
-            return Err(DynamicImageError::InvalidHeight);
+            return Err(NepheleImageError::InvalidHeight);
         }
     }
 
     if let Some(Some(quality)) = quality {
         if !(1..=100).contains(&quality) {
-            return Err(DynamicImageError::InvalidQuality);
+            return Err(NepheleImageError::InvalidQuality);
         }
     }
 
@@ -259,7 +268,7 @@ fn validate(
 }
 
 #[cfg(feature = "builder")]
-impl DynamicImageBuilder {
+impl NepheleImageBuilder {
     fn validate(&self) -> Result<()> {
         validate(self.raw_url.clone(), self.width, self.height, self.quality)
     }
@@ -285,22 +294,22 @@ mod tests {
     #[cfg(feature = "builder")]
     fn test_builder() {
         // url不能为空
-        assert!(DynamicImageBuilder::default().build().is_err());
+        assert!(NepheleImageBuilder::default().build().is_err());
 
         // 宽高不能同时为空
-        assert!(DynamicImageBuilder::default()
+        assert!(NepheleImageBuilder::default()
             .raw_url(OLD_URLS.first().unwrap().to_string())
             .build()
             .is_err());
 
         // 宽必须 > 0
-        assert!(DynamicImageBuilder::default()
+        assert!(NepheleImageBuilder::default()
             .raw_url(OLD_URLS.first().unwrap().to_string())
             .width(0u32)
             .build()
             .is_err());
 
-        assert!(DynamicImageBuilder::default()
+        assert!(NepheleImageBuilder::default()
             .raw_url(OLD_URLS.first().unwrap().to_string())
             .width(240u32)
             .build()
@@ -310,7 +319,7 @@ mod tests {
     #[test]
     #[cfg(feature = "builder")]
     fn test_get_url() {
-        let output = DynamicImageBuilder::default()
+        let output = NepheleImageBuilder::default()
             .raw_url(OLD_URLS.first().unwrap().to_string())
             .width(240u32)
             .build()

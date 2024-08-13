@@ -1,15 +1,15 @@
 use std::fmt::{Display, Formatter};
 
-use sdkrs_core::dynamic_image::DynamicImageError;
+use sdkrs_core::nephele_image::NepheleImageError;
 
 #[derive(uniffi::Error, Debug)]
 #[uniffi(flat_error)]
 pub enum SdkrsError {
-    DE(DynamicImageError),
+    DE(NepheleImageError),
 }
 
-impl From<DynamicImageError> for SdkrsError {
-    fn from(e: DynamicImageError) -> Self {
+impl From<NepheleImageError> for SdkrsError {
+    fn from(e: NepheleImageError) -> Self {
         Self::DE(e)
     }
 }
