@@ -45,6 +45,6 @@ jobs:
           RUSTFLAGS: "-D warnings"
 
       - name: Upload Clippy results to GitHub
-        uses: github/codeql-action/upload-sarif@d39d31e687223d841ef683f52467bd88e9b21c14 # v3.25.3
+        uses: github/codeql-action/upload-sarif@c36620d31ac7c881962c3d9dd939c40ec9434f2b # v3.26.12
         with:
           sarif_file: clippy_result.sarif
