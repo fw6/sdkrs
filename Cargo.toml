@@ -16,7 +16,7 @@ unused_async = "deny"
 unwrap_used = "deny"
 
 [workspace.dependencies]
-thiserror = "1.0"
+thiserror = "2.0"
 
 derive_builder = "0.20"
 regex-lite = "0.1"
